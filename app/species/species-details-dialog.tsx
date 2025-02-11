@@ -14,6 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import type { SpeciesWithAuthor } from "@/lib/types";
 import Image from "next/image";
 import { useState } from "react";
+import DeleteSpeciesDialog from "./delete-species-dialog";
 import EditSpeciesDialog from "./edit-species-dialog";
 
 interface SpeciesDetailsDialogProps {
@@ -22,9 +23,10 @@ interface SpeciesDetailsDialogProps {
 }
 
 export default function SpeciesDetailsDialog({ species, sessionId }: SpeciesDetailsDialogProps) {
-  // Control open/closed state of the dialog
+  // Control open/closed state of the dialogs
   const [open, setOpen] = useState<boolean>(false);
   const [editDialogOpen, setEditDialogOpen] = useState<boolean>(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
 
   const isAuthor = species.author.id === sessionId;
 
@@ -87,14 +89,24 @@ export default function SpeciesDetailsDialog({ species, sessionId }: SpeciesDeta
                 <h4 className="font-semibold">Contributed by</h4>
               </div>
               {isAuthor && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setEditDialogOpen(true)}
-                  className="h-8 w-8 p-0"
-                >
-                  <Icons.settings className="h-4 w-4" />
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setEditDialogOpen(true)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Icons.settings className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setDeleteDialogOpen(true)}
+                    className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                  >
+                    <Icons.trash className="h-4 w-4" />
+                  </Button>
+                </div>
               )}
             </div>
             <p>{species.author.display_name}</p>
@@ -113,6 +125,19 @@ export default function SpeciesDetailsDialog({ species, sessionId }: SpeciesDeta
           onOpenChange={setEditDialogOpen}
           onSuccess={() => {
             setEditDialogOpen(false);
+            setOpen(false);
+          }}
+        />
+      )}
+
+      {/* Delete Dialog */}
+      {isAuthor && (
+        <DeleteSpeciesDialog
+          species={species}
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          onSuccess={() => {
+            setDeleteDialogOpen(false);
             setOpen(false);
           }}
         />
