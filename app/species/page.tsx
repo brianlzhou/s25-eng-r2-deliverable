@@ -27,7 +27,8 @@ export default async function SpeciesList() {
       *,
       author: profiles!species_author_fkey (
         display_name,
-        biography
+        biography,
+        id
       )
     `,
     )
@@ -41,7 +42,7 @@ export default async function SpeciesList() {
       </div>
       <Separator className="my-4" />
       <div className="flex flex-wrap justify-center">
-        {species?.map((species) => <SpeciesCard key={species.id} species={species} />)}
+        {species?.map((species) => <SpeciesCard key={species.id} species={species} sessionId={sessionId} />)}
       </div>
     </>
   );
