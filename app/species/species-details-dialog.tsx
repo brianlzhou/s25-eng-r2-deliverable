@@ -14,10 +14,19 @@ import { Separator } from "@/components/ui/separator";
 import type { SpeciesWithAuthor } from "@/lib/types";
 import Image from "next/image";
 import { useState } from "react";
+import EditSpeciesDialog from "./edit-species-dialog";
 
-export default function SpeciesDetailsDialog({ species }: { species: SpeciesWithAuthor }) {
+interface SpeciesDetailsDialogProps {
+  species: SpeciesWithAuthor;
+  sessionId: string;
+}
+
+export default function SpeciesDetailsDialog({ species, sessionId }: SpeciesDetailsDialogProps) {
   // Control open/closed state of the dialog
   const [open, setOpen] = useState<boolean>(false);
+  const [editDialogOpen, setEditDialogOpen] = useState<boolean>(false);
+
+  const isAuthor = species.author.id === sessionId;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -72,9 +81,21 @@ export default function SpeciesDetailsDialog({ species }: { species: SpeciesWith
           <Separator />
 
           <div>
-            <div className="mb-2 flex items-center gap-2">
-              <Icons.user className="h-4 w-4" />
-              <h4 className="font-semibold">Contributed by</h4>
+            <div className="mb-2 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Icons.user className="h-4 w-4" />
+                <h4 className="font-semibold">Contributed by</h4>
+              </div>
+              {isAuthor && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setEditDialogOpen(true)}
+                  className="h-8 w-8 p-0"
+                >
+                  <Icons.settings className="h-4 w-4" />
+                </Button>
+              )}
             </div>
             <p>{species.author.display_name}</p>
             {species.author.biography && (
@@ -83,6 +104,19 @@ export default function SpeciesDetailsDialog({ species }: { species: SpeciesWith
           </div>
         </div>
       </DialogContent>
+
+      {/* Edit Dialog */}
+      {isAuthor && (
+        <EditSpeciesDialog
+          species={species}
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          onSuccess={() => {
+            setEditDialogOpen(false);
+            setOpen(false);
+          }}
+        />
+      )}
     </Dialog>
   );
 }
