@@ -11,15 +11,43 @@ React server components don't track state between rerenders, so leaving the uniq
 can cause errors with matching props and state in child components if the list order changes.
 */
 import type { SpeciesWithAuthor } from "@/lib/types";
+import { cn } from "@/lib/utils";
 import Image from "next/image";
 import SpeciesDetailsDialog from "./species-details-dialog";
+
+interface SearchFilters {
+  scientificName: boolean;
+  commonName: boolean;
+  description: boolean;
+}
 
 interface SpeciesCardProps {
   species: SpeciesWithAuthor;
   sessionId: string;
+  searchHighlight?: string;
+  searchFilters?: SearchFilters;
 }
 
-export default function SpeciesCard({ species, sessionId }: SpeciesCardProps) {
+function highlightText(text: string, highlight: string, enabled: boolean) {
+  if (!highlight || !enabled) return text;
+
+  const parts = text.split(new RegExp(`(${highlight})`, "gi"));
+  return (
+    <>
+      {parts.map((part, i) =>
+        part.toLowerCase() === highlight.toLowerCase() ? (
+          <mark key={i} className="bg-yellow-200 rounded px-0.5">
+            {part}
+          </mark>
+        ) : (
+          part
+        ),
+      )}
+    </>
+  );
+}
+
+export default function SpeciesCard({ species, sessionId, searchHighlight, searchFilters }: SpeciesCardProps) {
   return (
     <div className="m-4 w-72 min-w-72 flex-none rounded border-2 p-3 shadow">
       {species.image && (
@@ -27,9 +55,21 @@ export default function SpeciesCard({ species, sessionId }: SpeciesCardProps) {
           <Image src={species.image} alt={species.scientific_name} fill style={{ objectFit: "cover" }} />
         </div>
       )}
-      <h3 className="mt-3 text-2xl font-semibold">{species.scientific_name}</h3>
-      <h4 className="text-lg font-light italic">{species.common_name}</h4>
-      <p>{species.description ? species.description.slice(0, 150).trim() + "..." : ""}</p>
+      <h3 className="mt-3 text-2xl font-semibold">
+        {highlightText(species.scientific_name, searchHighlight ?? "", searchFilters?.scientificName ?? false)}
+      </h3>
+      <h4 className="text-lg font-light italic">
+        {highlightText(species.common_name ?? "", searchHighlight ?? "", searchFilters?.commonName ?? false)}
+      </h4>
+      <p>
+        {species.description
+          ? highlightText(
+              species.description.slice(0, 150).trim() + "...",
+              searchHighlight ?? "",
+              searchFilters?.description ?? false,
+            )
+          : ""}
+      </p>
       <SpeciesDetailsDialog species={species} sessionId={sessionId} />
     </div>
   );
